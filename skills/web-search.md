@@ -1,0 +1,132 @@
+# Skill: Web Search
+
+**Purpose:** Teach agents how to search the web effectively for recent AI content, handle paywalls, and extract clean structured data from results.
+
+---
+
+## 1. Query Formulation for Recent Content
+
+### Date-bounding your searches
+Always bound searches to the past 7 days. Use these patterns:
+```
+site:arxiv.org after:2025-04-01 "transformer" OR "LLM" OR "RAG"
+site:github.com trending AI machine-learning created:>2025-04-01
+"last week" OR "this week" OR "released" site:huggingface.co
+```
+
+### High-signal query templates by source type
+
+**Papers (arXiv / HuggingFace):**
+```
+arxiv.org cs.AI cs.LG cs.CL [topic] 2025
+huggingface.co/papers [topic] week
+"submitted to arXiv" [topic] April 2025
+```
+
+**GitHub repositories:**
+```
+site:github.com [topic] stars:>100 pushed:>2025-04-01
+github trending [AI/ML topic] this week
+[library name] release changelog 2025
+```
+
+**News:**
+```
+[topic] AI announcement April 2025 site:techcrunch.com OR site:theverge.com
+[lab name] release blog 2025
+"new model" OR "new release" [topic] this week
+```
+
+**Blogs and newsletters:**
+```
+site:lilianweng.github.io OR site:jalammar.github.io 2025
+"last week in AI" OR "import AI" OR "the batch" 2025
+[author name] blog post [topic] April 2025
+```
+
+---
+
+## 2. Filtering Results to Past 7 Days
+
+### Priority signals for recency
+- Explicit date in URL or headline (e.g. `/2025/04/`, `April 2025`)
+- "Released", "Launched", "Announced", "New", "Introducing" in title
+- "This week", "Last week", "Today" in content
+- ISO date format in JSON-LD metadata
+
+### When to include borderline-dated items
+- If the item is highly relevant (score ≥ 8) and < 14 days old, include it with a note
+- If the item is a major release (e.g. GPT-5), include regardless of exact date
+- If date is ambiguous, note it as "date uncertain" and include if relevant
+
+---
+
+## 3. Extracting Clean Content from Results
+
+### What to extract per result
+1. **Title** — exact, unmodified
+2. **URL** — canonical link, not redirect
+3. **Date** — ISO format (`YYYY-MM-DD`), or "unknown" if not found
+4. **Summary** — 2–4 sentences synthesized from the content, not copy-pasted
+5. **Key contribution / why it matters** — 1 sentence
+6. **Relevance tags** — 3–5 tags from the standard tag list below
+
+### Standard relevance tags
+Use these consistently across all agents:
+`RAG`, `LLM`, `multimodal`, `agents`, `fine-tuning`, `inference`, `quantization`, `vision`, `audio`, `code-gen`, `reasoning`, `memory`, `safety`, `alignment`, `benchmark`, `tooling`, `deployment`, `evaluation`, `embedding`, `retrieval`, `training`, `architecture`, `open-source`, `API`, `product-launch`
+
+---
+
+## 4. Handling Paywalled Content
+
+### Detection signals
+- "Subscribe to read", "Sign in", "Member only", "Paywall" in response
+- HTTP 402 or redirect to login page
+- Partial content with "Continue reading" cut-off
+
+### What to do with paywalled content
+1. Extract everything visible in the preview/excerpt
+2. Check if the same story is covered by a non-paywalled source (cross-reference)
+3. Note in output: `"paywalled": true`
+4. Apply `-1` to relevance score
+5. Still include if the item is highly significant — summarise from the headline and any visible excerpt
+
+### Sources that are frequently paywalled
+- The Information (always paywalled — use headline only)
+- Bloomberg Technology (often paywalled — look for Reuters/AP coverage)
+- Fortune Tech (often paywalled)
+- MIT Technology Review (partial paywall)
+
+---
+
+## 5. Rate Limiting and Retry Strategy
+
+### Request spacing
+- Space web searches at least 2 seconds apart when hitting the same domain
+- For high-volume runs (6 source agents in parallel), stagger domain hits
+- Maximum 3 requests per domain per run to avoid being blocked
+
+### Retry logic
+On failure (timeout, 429, 503):
+1. Wait 5 seconds
+2. Retry once with a simplified query
+3. If still failing, skip the source and log: `"source_status": "unavailable"` in output
+4. Do NOT crash the entire run — partial results are better than no results
+
+### Signs of rate limiting
+- Empty results for normally-active sources
+- Identical results returned for different queries
+- Unusually slow response times
+
+---
+
+## 6. Quality Checks Before Outputting
+
+Before returning results, verify each item:
+- [ ] Has a valid URL (not a redirect, not a 404)
+- [ ] Date is within the target window (or flagged as outside)
+- [ ] Summary is factual — do not hallucinate content not found in the source
+- [ ] Tags are from the standard list
+- [ ] Relevance score is justified by the scoring rubric in `skills/relevance-scorer.md`
+
+If you cannot verify a URL is real, omit the item rather than include a potentially hallucinated link.
