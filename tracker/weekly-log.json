@@ -1,90 +1,127 @@
 {
-  "last_updated": "2026-04-02T09:00:00Z",
+  "last_updated": "2026-04-02T12:30:00Z",
   "weeks": [
     {
       "week": "2026-W14",
-      "trigger": "4 people free this week: Arjun (ML), Priya (backend), Dev (frontend), Alex (full-stack). Focus on RAG and agent frameworks.",
-      "generated_at": "2026-04-02T09:00:00Z",
+      "trigger": "4 people available, focus on new models released and new AI systems — RAG, Agentic, etc.",
+      "generated_at": "2026-04-02T12:30:00Z",
       "team_size": 4,
-      "focus_areas": ["RAG", "agent frameworks"],
-      "items_found": 62,
-      "items_after_dedup": 51,
-      "sources_scanned": ["papers", "github", "news", "youtube", "blogs", "podcast-community"],
+      "focus_areas": ["new model releases", "RAG", "agentic AI systems"],
+      "items_found": 52,
+      "items_after_dedup": 44,
+      "sources_scanned": ["papers", "github", "news", "youtube", "blogs", "community"],
       "sources_failed": [],
       "clusters": [
-        "Agentic RAG",
-        "Agent frameworks and orchestration",
-        "RAG evaluation and observability",
-        "Model releases and context windows",
-        "Production infrastructure and tooling",
-        "Learning resources"
+        "Frontier Model Releases — Open Weights",
+        "Frontier Model Releases — Closed/Lab",
+        "Agentic RAG Architecture",
+        "Agentic AI Systems — Frameworks and Tools",
+        "AI Security, Safety, and Enterprise Risk",
+        "Production Tooling and Inference"
       ],
-      "carry_overs_from_previous": [],
-      "output_file": "output/2026-W14-brief.md",
-      "tasks": [
+      "carry_overs_from_previous": [
         {
           "id": "T2026-W14-1",
-          "title": "Reproduce the A-RAG hierarchical retrieval benchmark on a multi-hop QA dataset",
+          "title": "Reproduce A-RAG hierarchical retrieval benchmark on multi-hop QA dataset",
           "assignee": "Arjun",
-          "cluster": "Agentic RAG",
-          "source_links": [
-            "https://arxiv.org/abs/2602.03442",
-            "https://github.com/Ayanami0730/arag"
-          ],
-          "effort": "1 day",
-          "priority": "High",
           "status": "todo",
-          "created": "2026-04-02T09:00:00Z",
-          "completed": null,
-          "notes": null
+          "original_run": "2026-W14-run1"
         },
         {
           "id": "T2026-W14-2",
-          "title": "Set up Microsoft Agent Framework RC with a two-agent RAG workflow in Python",
+          "title": "Set up Microsoft Agent Framework RC with two-agent RAG workflow",
           "assignee": "Priya",
-          "cluster": "Agent frameworks and orchestration",
-          "source_links": [
-            "https://devblogs.microsoft.com/foundry/microsoft-agent-framework-reaches-release-candidate/",
-            "https://github.com/microsoft/agent-framework",
-            "https://learn.microsoft.com/en-us/agent-framework/overview/"
-          ],
-          "effort": "1 day",
-          "priority": "High",
           "status": "todo",
-          "created": "2026-04-02T09:00:00Z",
-          "completed": null,
-          "notes": null
+          "original_run": "2026-W14-run1"
         },
         {
           "id": "T2026-W14-3",
-          "title": "Wire DeepEval 2.3 into our RAG pipeline as a CI quality gate",
+          "title": "Wire DeepEval 2.3 into RAG pipeline as CI quality gate",
           "assignee": "Dev",
-          "cluster": "RAG evaluation and observability",
-          "source_links": [
-            "https://deepeval.com/guides/guides-rag-evaluation",
-            "https://blog.premai.io/rag-evaluation-metrics-frameworks-testing-2026/"
-          ],
-          "effort": "Half day",
-          "priority": "Medium",
           "status": "todo",
-          "created": "2026-04-02T09:00:00Z",
+          "original_run": "2026-W14-run1"
+        },
+        {
+          "id": "T2026-W14-4",
+          "title": "Prototype Gemini 3.1 File Search RAG endpoint and benchmark",
+          "assignee": "Alex",
+          "status": "todo",
+          "original_run": "2026-W14-run1"
+        }
+      ],
+      "output_file": "output/2026-W14-brief-v2.md",
+      "run_version": "v2",
+      "must_not_miss": [
+        "Meta Llama 4 Scout & Maverick — open-weight multimodal MoE with 10M-token context",
+        "Anthropic Claude Mythos — leaked step-change model with unprecedented cybersecurity risk",
+        "A-RAG — hierarchical agentic retrieval with public code"
+      ],
+      "tasks": [
+        {
+          "id": "T2026-W14-5",
+          "title": "Benchmark Llama 4 Scout against current RAG retrieval-generation pipeline",
+          "assignee": "Person 1",
+          "cluster": "Frontier Model Releases — Open Weights",
+          "source_links": [
+            "https://ai.meta.com/blog/llama-4-multimodal-intelligence/",
+            "https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct",
+            "https://www.llama.com/models/llama-4/"
+          ],
+          "effort": "1 day",
+          "priority": "HIGH",
+          "status": "todo",
+          "created": "2026-04-02T12:30:00Z",
           "completed": null,
           "notes": null
         },
         {
-          "id": "T2026-W14-4",
-          "title": "Prototype a Gemini 3.1 File Search RAG endpoint and benchmark it against our current pipeline",
-          "assignee": "Alex",
-          "cluster": "Model releases and context windows",
+          "id": "T2026-W14-6",
+          "title": "Integrate A-RAG three-tool retrieval interface into agent pipeline and test on multi-hop queries",
+          "assignee": "Person 2",
+          "cluster": "Agentic RAG Architecture",
           "source_links": [
-            "https://ai.google.dev/gemini-api/docs/gemini-3",
-            "https://context-link.ai/blog/rag-for-gemini",
-            "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/3-1-pro"
+            "https://arxiv.org/abs/2602.03442",
+            "https://github.com/Ayanami0730/arag",
+            "https://huggingface.co/papers/2602.03442"
+          ],
+          "effort": "1 day",
+          "priority": "HIGH",
+          "status": "todo",
+          "created": "2026-04-02T12:30:00Z",
+          "completed": null,
+          "notes": null
+        },
+        {
+          "id": "T2026-W14-7",
+          "title": "Build and test a voice-capable agent using Mistral Voxtral TTS in a local pipeline",
+          "assignee": "Person 3",
+          "cluster": "Agentic AI Systems — Frameworks and Tools",
+          "source_links": [
+            "https://mistral.ai/news/voxtral-tts",
+            "https://huggingface.co/mistralai/Voxtral-4B-TTS-2603",
+            "https://techcrunch.com/2026/03/26/mistral-releases-a-new-open-source-model-for-speech-generation/"
           ],
           "effort": "Half day",
-          "priority": "Medium",
+          "priority": "HIGH",
           "status": "todo",
-          "created": "2026-04-02T09:00:00Z",
+          "created": "2026-04-02T12:30:00Z",
+          "completed": null,
+          "notes": null
+        },
+        {
+          "id": "T2026-W14-8",
+          "title": "Deploy Microsoft GraphRAG (March 2026) on sample corpus and compare to vector-only RAG",
+          "assignee": "Person 4",
+          "cluster": "Agentic RAG Architecture",
+          "source_links": [
+            "https://github.com/microsoft/graphrag",
+            "https://github.com/HKUDS/LightRAG",
+            "https://calmops.com/ai/graphrag-complete-guide-2026/"
+          ],
+          "effort": "Half day",
+          "priority": "MEDIUM",
+          "status": "todo",
+          "created": "2026-04-02T12:30:00Z",
           "completed": null,
           "notes": null
         }

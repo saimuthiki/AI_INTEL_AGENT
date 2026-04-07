@@ -2,6 +2,40 @@
 
 **Purpose:** Teach agents how to search the web effectively for recent AI content, handle paywalls, and extract clean structured data from results.
 
+> **Escalation path:** Web search is the default tool. When it returns incomplete, stale, or paywalled results, escalate to `agent-browser` (see `skills/agent-browser.md`). The decision rule: if web search gives you what you need in one query, use it. If you'd need to click, scroll, login, or wait for JavaScript — use agent-browser.
+
+---
+
+## 0. Tool Selection Decision Tree
+
+```
+Do you need content from this URL?
+├── Is it a static, public, indexable page? (arXiv, GitHub README, news article)
+│   └── YES → Use web search first
+│       └── Did you get the full content you need?
+│           ├── YES → Done ✓
+│           └── NO → Escalate to agent-browser (snapshot + extract)
+│
+├── Is it JavaScript-rendered? (GitHub Trending, Reddit, HN, HuggingFace feed)
+│   └── YES → Use agent-browser directly (skip web search for these)
+│
+├── Is it behind a paywall?
+│   └── YES → Web search for the headline/excerpt, then agent-browser to check
+│             what's visible to unauthenticated users
+│
+└── Does it require interaction? (clicking "Load more", filling forms, login)
+    └── YES → agent-browser only
+```
+
+**Sources where agent-browser is PREFERRED over web search:**
+- GitHub Trending (JS-rendered)
+- HuggingFace Papers/Models feed (JS-rendered)
+- Reddit new interface → use `old.reddit.com` via agent-browser
+- Substack newsletters (JS + modal)
+- YouTube video pages (description, chapters, view counts)
+- OpenReview submissions (JS-rendered pagination)
+- Product Hunt (JS-rendered cards)
+
 ---
 
 ## 1. Query Formulation for Recent Content

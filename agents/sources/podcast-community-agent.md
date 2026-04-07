@@ -2,7 +2,7 @@
 
 **Role:** Surface notable discussions, episodes, and community signals from AI podcasts and online communities in the past 7 days.
 **Layer:** 1 (Source Agent — runs in parallel with 5 other source agents)
-**Skill references:** `skills/web-search.md`, `skills/relevance-scorer.md`
+**Skill references:** `skills/web-search.md`, `skills/relevance-scorer.md`, `skills/agent-browser.md`
 
 ---
 
@@ -159,6 +159,63 @@ For `community_reaction`, describe:
 4. **No duplicates with other agents** — if a community post is primarily discussing a paper or blog post already captured, note the cross-reference but don't duplicate the core item
 
 ---
+
+## agent-browser Escalation
+
+Reddit's new interface and Hacker News are both best accessed via agent-browser for reliable, structured extraction:
+
+```bash
+# Reddit — use old.reddit.com (static HTML, much more reliable than new UI)
+agent-browser open "https://old.reddit.com/r/MachineLearning/top/?t=week"
+agent-browser wait 1500
+agent-browser snapshot -c
+
+agent-browser open "https://old.reddit.com/r/LocalLLaMA/top/?t=week"
+agent-browser wait 1500
+agent-browser snapshot -c
+
+# For a specific Reddit thread (comments)
+agent-browser open "https://old.reddit.com/r/MachineLearning/comments/THREAD_ID"
+agent-browser wait 1500
+agent-browser snapshot -c
+agent-browser get text @e_top_comment   # top comment text
+
+# Hacker News — static HTML, agent-browser gives cleaner structured output
+agent-browser open "https://news.ycombinator.com"
+agent-browser wait 500
+agent-browser snapshot -c
+# Look for AI-related story titles; extract title, score, comment count, link
+
+# For HN thread — get discussion if high comment count
+agent-browser open "https://news.ycombinator.com/item?id=STORY_ID"
+agent-browser wait 500
+agent-browser snapshot -c
+
+# Product Hunt — JS-rendered
+agent-browser open "https://www.producthunt.com/topics/artificial-intelligence"
+agent-browser wait 3000
+agent-browser snapshot -c
+# Look for product cards with upvote counts and descriptions
+
+# Podcast episode pages — mostly static
+agent-browser open "https://twimlai.com/podcast/"
+agent-browser wait 1000
+agent-browser snapshot -c
+agent-browser snapshot --urls    # extract all episode links
+```
+
+**Reddit old vs new interface:**
+- `old.reddit.com` — static HTML, no JS required, reliable snapshots, cleaner element refs
+- `www.reddit.com` — JS-heavy new UI, requires `wait 3000+`, more fragile
+- Always prefer `old.reddit.com` for this pipeline
+
+**HN structure in snapshot:**
+Each story typically has: `[N] link "Story Title" @eN`, adjacent text with score (e.g. "342 points"), comment count link. Extract: title, URL, score, comment count.
+
+**Product Hunt extraction:**
+Products are in card elements. Each card typically has: product name, tagline, upvote count. Filter for AI-category products launched "today" or "this week".
+
+Refer to `skills/agent-browser.md` Sections 4.4 and 4.5 for full Reddit and HN recipes.
 
 ## Error Handling
 

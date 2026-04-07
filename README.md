@@ -257,7 +257,8 @@ ai-intel-agent/
 │   └── tracker-agent.md             ← Persist + write output
 │
 ├── skills/
-│   ├── web-search.md                 ← Query formulation, date filtering, paywall handling
+│   ├── web-search.md                 ← Query formulation, date filtering, paywall handling + escalation path
+│   ├── agent-browser.md              ← Full browser automation (vercel-labs/agent-browser) ← NEW
 │   ├── youtube-transcript.md         ← Transcript extraction + fallbacks
 │   ├── pdf-extractor.md              ← Fast paper reading strategy
 │   ├── relevance-scorer.md           ← 1-10 scoring rubric
@@ -370,6 +371,91 @@ Cap: 10. Floor: 1.
 - No team config file — team info is parsed from your trigger each week
 - No database — state lives in `tracker/weekly-log.json`
 - First run: tracker auto-creates with empty state
+
+---
+
+## Integrations
+
+This system is designed to stay clean and composable. External tools slot in as **escalation layers** — used by agents when the default tool (web search) is not sufficient. Current integrations:
+
+---
+
+### agent-browser — Full Browser Automation
+
+**Source:** [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser)
+**Skill file:** `skills/agent-browser.md`
+**Type:** CLI tool (native Rust, 7 MB install, 8 MB memory)
+
+#### What it adds
+
+Web search is passive — it fetches pre-indexed, static content. `agent-browser` adds **active, interactive browsing**: it opens real Chrome, navigates, clicks, waits for JavaScript, handles auth sessions, and extracts structured data from anything a human could see in a browser.
+
+| Source agent | Without agent-browser | With agent-browser |
+|---|---|---|
+| **GitHub agent** | Web search often returns stale GitHub Trending data | Directly navigates `github.com/trending` (JS-rendered), gets live star counts |
+| **Papers agent** | HuggingFace Papers feed sometimes incomplete | Full JS-rendered feed with like counts, direct paper links |
+| **News agent** | Paywalled articles return only headline | Navigates to article, extracts all visible text, detects paywall cleanly |
+| **Blogs agent** | Substack newsletter feed empty or truncated | Navigates Substack, dismisses modals, extracts full post text |
+| **Community agent** | Reddit new interface unreliable via search | Uses `old.reddit.com` for clean static extraction; HN thread comments |
+| **YouTube agent** | Descriptions truncated, no chapter markers | Opens video page, expands description, extracts chapters and timestamps |
+
+#### Token efficiency
+agent-browser uses a "snapshot + refs" model that returns only interactive elements as lightweight references (`@e1`, `@e2`). This is **93% fewer tokens** than alternatives like Playwright MCP — important when running 6 parallel source agents.
+
+#### Install (one-time setup)
+```bash
+npm install -g agent-browser
+agent-browser install    # downloads Chrome for Testing (~170 MB)
+agent-browser --version  # verify: should print v0.25.x or later
+```
+
+#### Usage inside this system
+
+Agents use it automatically via the escalation ladder defined in `skills/agent-browser.md`:
+1. Try web search first (fast, zero overhead)
+2. Escalate to `agent-browser snapshot` if content is JS-rendered or incomplete
+3. Escalate to `agent-browser interact` if clicking/scrolling/login is needed
+
+**It is optional** — if not installed, all agents fall back to web search. Results may be less complete for JS-rendered sources (GitHub Trending, Reddit, HuggingFace feed).
+
+#### Key commands used by this system
+
+```bash
+# Navigate + snapshot (most common pattern)
+agent-browser open "https://github.com/trending/python?since=weekly"
+agent-browser wait 2000
+agent-browser snapshot -c                   # compact snapshot
+
+# Extract specific element text
+agent-browser get text @e5
+
+# Extract all links from page
+agent-browser snapshot --urls
+
+# Use named session for multi-site runs (reuses same Chrome instance)
+agent-browser --session weekly-run open https://site.com
+agent-browser --session weekly-run snapshot -c
+
+# Save auth state (one-time manual step for login-required sources)
+agent-browser --headed open https://site.com   # log in manually
+agent-browser state save skills/auth-states/sitename.json
+
+# Load saved auth state in automated runs
+agent-browser state load skills/auth-states/sitename.json
+```
+
+#### Security notes
+- Never commit `skills/auth-states/` to git — add to `.gitignore`
+- agent-browser uses a domain allowlist in `agent-browser.json` if you want to restrict which sites it can visit
+- All local execution — no data leaves your machine unless you use a cloud provider (Browserbase, AWS AgentCore, etc.)
+
+#### Full documentation
+See `skills/agent-browser.md` for:
+- Complete escalation decision tree
+- Per-source recipes (GitHub, HuggingFace, Reddit, HN, YouTube, Substack, paywalled news)
+- Auth workflow guide
+- Token efficiency tips
+- Error handling and fallbacks
 
 ---
 

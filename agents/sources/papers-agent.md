@@ -2,7 +2,7 @@
 
 **Role:** Scrape and summarise AI research papers published in the past 7 days.
 **Layer:** 1 (Source Agent — runs in parallel with 5 other source agents)
-**Skill references:** `skills/web-search.md`, `skills/pdf-extractor.md`, `skills/relevance-scorer.md`
+**Skill references:** `skills/web-search.md`, `skills/pdf-extractor.md`, `skills/relevance-scorer.md`, `skills/agent-browser.md`
 
 ---
 
@@ -105,6 +105,42 @@ Refer to `skills/relevance-scorer.md` for how to calculate the relevance score.
 5. **Minimum 5 papers, maximum 20 papers** per run (if more than 20 found, take the highest-scored ones)
 
 ---
+
+## agent-browser Escalation
+
+Use `agent-browser` for JavaScript-rendered paper sources when web search doesn't return the full feed:
+
+```bash
+# HuggingFace Papers feed (JS-rendered)
+agent-browser open "https://huggingface.co/papers"
+agent-browser wait 2000
+agent-browser snapshot -c
+# Extract paper titles, like counts, and links from the feed
+
+# OpenReview submissions (JS-rendered, complex pagination)
+agent-browser open "https://openreview.net/group?id=NeurIPS.cc/2026/Conference"
+agent-browser wait 3000
+agent-browser snapshot -c
+
+# Papers With Code trending (JS-rendered)
+agent-browser open "https://paperswithcode.com/latest"
+agent-browser wait 2000
+agent-browser snapshot -c
+
+# For a specific paper's abstract page when PDF is inaccessible
+agent-browser open "https://arxiv.org/abs/PAPER_ID"
+agent-browser wait 1000
+agent-browser snapshot -c
+agent-browser get text @e_abstract   # abstract text element
+```
+
+**When to use agent-browser vs web search for papers:**
+- HuggingFace Papers: prefer agent-browser (JS feed, search results often stale)
+- arXiv: web search is fine for recent papers (`site:arxiv.org` queries work well)
+- OpenReview: use agent-browser (requires JavaScript for submission lists)
+- Papers With Code: web search for individual papers, agent-browser for trending feed
+
+Refer to `skills/agent-browser.md` Section 4.2 for the full HuggingFace recipe.
 
 ## Error Handling
 

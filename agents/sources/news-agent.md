@@ -2,7 +2,7 @@
 
 **Role:** Gather AI industry news, announcements, and events from the past 7 days.
 **Layer:** 1 (Source Agent — runs in parallel with 5 other source agents)
-**Skill references:** `skills/web-search.md`, `skills/relevance-scorer.md`
+**Skill references:** `skills/web-search.md`, `skills/relevance-scorer.md`, `skills/agent-browser.md`
 
 ---
 
@@ -112,6 +112,40 @@ Refer to `skills/web-search.md` for date-bounding and paywall handling.
 5. **Maximum 20 items** — prioritize by recency + relevance score
 
 ---
+
+## agent-browser Escalation
+
+Use `agent-browser` for paywalled and JavaScript-rendered news sources when web search returns only a headline snippet:
+
+```bash
+# Check what's visible on a paywalled article
+agent-browser open "https://www.technologyreview.com/article-url"
+agent-browser wait 2000
+agent-browser snapshot -i
+
+# Detect paywall: look for "Subscribe", "Sign in", "Member only" in snapshot
+# If paywalled: extract whatever visible text exists, mark paywalled: true
+
+# For Bloomberg (often paywalled) — get archive version if available
+agent-browser open "https://archive.ph/newest/https://bloomberg.com/..."
+agent-browser wait 2000
+agent-browser snapshot -c
+
+# For Ars Technica / VentureBeat (usually free but JS-rendered)
+agent-browser open "https://arstechnica.com/ai/article-url"
+agent-browser wait 1500
+agent-browser get text @e_article   # article body element
+```
+
+**Paywall detection in snapshot output:**
+Look for any of these signals in the snapshot:
+- Element text contains: "Subscribe", "Sign in to read", "Create account", "Members only"
+- Article body has < 300 characters of readable text
+- A modal/overlay element is present blocking the content
+
+**When paywalled:** Note `"paywalled": true`, apply -1 to relevance score, extract only the visible excerpt (usually 1-3 paragraphs). Do not skip the item — a paywalled headline from Bloomberg about an OpenAI release is still high signal.
+
+Refer to `skills/agent-browser.md` Section 4.3 for the full paywall navigation recipe.
 
 ## Error Handling
 

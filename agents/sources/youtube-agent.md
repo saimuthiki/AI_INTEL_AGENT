@@ -2,7 +2,7 @@
 
 **Role:** Find and summarise AI-focused YouTube videos published in the past 7 days.
 **Layer:** 1 (Source Agent — runs in parallel with 5 other source agents)
-**Skill references:** `skills/web-search.md`, `skills/youtube-transcript.md`, `skills/relevance-scorer.md`
+**Skill references:** `skills/web-search.md`, `skills/youtube-transcript.md`, `skills/relevance-scorer.md`, `skills/agent-browser.md`
 
 ---
 
@@ -116,6 +116,51 @@ Refer to `skills/youtube-transcript.md` for how to extract and summarise video c
 4. **Maximum 15 videos** per run — quality over quantity
 
 ---
+
+## agent-browser Escalation
+
+YouTube is heavily JavaScript-rendered. Use `agent-browser` when web search returns only titles without descriptions or metadata:
+
+```bash
+# Get a video page for full description and chapter markers
+agent-browser open "https://www.youtube.com/watch?v=VIDEO_ID"
+agent-browser wait 4000            # YouTube needs time — heavy JS
+
+# YouTube collapses the description by default — expand it
+agent-browser snapshot -i
+# Find the "Show more" / "...more" button in the snapshot
+agent-browser click @e_show_more   # click to expand description
+agent-browser wait 500
+agent-browser snapshot -c
+
+# Extract description (contains chapters, links, timestamps)
+agent-browser get text @e_description
+
+# Get a channel's recent uploads page
+agent-browser open "https://www.youtube.com/@KarpathyChannel/videos"
+agent-browser wait 3000
+agent-browser snapshot -c
+# Look for video thumbnail elements with title, views, upload date
+
+# Get video metadata from the page
+agent-browser get text @e_view_count     # e.g. "124K views"
+agent-browser get text @e_upload_date   # e.g. "3 days ago"
+agent-browser get text @e_duration      # video duration
+```
+
+**YouTube-specific notes:**
+- "3 days ago", "1 week ago" — relative dates. Convert to absolute using current date.
+- View counts on YouTube are formatted: "124K views" → ~124,000. Flag with `"view_count_approximate": true`
+- Chapters appear in descriptions as lines starting with timestamps: `0:00 Intro`, `4:32 Main topic`
+- Auto-captions: YouTube generates them for most English videos but they're not directly accessible via agent-browser — use web search for `"[video title]" transcript` or rely on description
+
+**When to use agent-browser for YouTube:**
+- When you need the full description (not just snippet from search)
+- When you need accurate view counts (not estimates)
+- When chapters/timestamps are important (multi-step extraction)
+- When checking if a video was actually published in the past 7 days (relative dates)
+
+Refer to `skills/agent-browser.md` Section 4.7 for the full YouTube recipe.
 
 ## Error Handling
 

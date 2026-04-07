@@ -2,7 +2,7 @@
 
 **Role:** Find new and trending AI repositories, model releases, and library updates from the past 7 days.
 **Layer:** 1 (Source Agent — runs in parallel with 5 other source agents)
-**Skill references:** `skills/web-search.md`, `skills/relevance-scorer.md`
+**Skill references:** `skills/web-search.md`, `skills/relevance-scorer.md`, `skills/agent-browser.md`
 
 ---
 
@@ -128,6 +128,38 @@ Exclude:
 4. **Maximum 20 items** per run — prioritize by stars + relevance
 
 ---
+
+## agent-browser Escalation
+
+GitHub Trending is **JavaScript-rendered** — web search often returns stale data or nothing. Use `agent-browser` as the primary tool for trending repos (not a fallback):
+
+```bash
+# GitHub Trending — use agent-browser directly (JS-rendered page)
+agent-browser open "https://github.com/trending/python?since=weekly"
+agent-browser wait 2000
+agent-browser snapshot -c
+
+# HuggingFace Models feed — also JS-rendered
+agent-browser open "https://huggingface.co/models?sort=downloads&direction=-1&limit=20"
+agent-browser wait 2000
+agent-browser snapshot -c
+
+# For a specific library release page
+agent-browser open "https://github.com/langchain-ai/langchain/releases"
+agent-browser snapshot -i
+agent-browser get text @e1    # latest release notes
+```
+
+**When to escalate from web search to agent-browser:**
+- GitHub Trending returns empty or stale results from web search
+- HuggingFace model counts/download stats are not in search results
+- Need star count deltas (stars gained this week) not available via search
+
+**What to look for in GitHub Trending snapshot:**
+- Repository article elements containing name, description, star count, language, "+ N stars this week"
+- Use `snapshot --urls` to extract all repo links, then visit each for details
+
+Refer to `skills/agent-browser.md` Section 4.1 for the full GitHub Trending recipe.
 
 ## Error Handling
 

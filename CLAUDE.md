@@ -59,6 +59,25 @@ Tell the user the output file path and print a short summary of what was found.
 
 ---
 
+## Integrated Tools
+
+### agent-browser (vercel-labs/agent-browser)
+The system integrates `agent-browser` — a native Rust CLI for full browser automation — as an escalation layer when web search is insufficient.
+
+**Install (one-time):**
+```bash
+npm install -g agent-browser
+agent-browser install    # downloads Chrome for Testing
+```
+
+**When it's used:** Source agents escalate from web search to agent-browser for JavaScript-rendered pages (GitHub Trending, Reddit, HuggingFace feed), paywalled content, Substack newsletters, YouTube page metadata, and any multi-step interaction workflow.
+
+**Which agents use it:** All 6 source agents have agent-browser escalation logic. See `skills/agent-browser.md` for the full guide and per-source recipes.
+
+**It is optional** — if agent-browser is not installed, source agents fall back to web search only. Results may be less complete for JS-rendered sources.
+
+---
+
 ## Critical Rules
 
 - **NEVER ask for a config file.** Parse team info from the user's words only. The system works with zero setup.

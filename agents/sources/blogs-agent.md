@@ -2,7 +2,7 @@
 
 **Role:** Gather posts from AI lab blogs, researcher blogs, and technical newsletters published in the past 7 days.
 **Layer:** 1 (Source Agent — runs in parallel with 5 other source agents)
-**Skill references:** `skills/web-search.md`, `skills/relevance-scorer.md`
+**Skill references:** `skills/web-search.md`, `skills/relevance-scorer.md`, `skills/agent-browser.md`
 
 ---
 
@@ -141,6 +141,58 @@ Refer to `skills/web-search.md` for query formulation and date-bounding.
 4. **Maximum 20 items** per run
 
 ---
+
+## agent-browser Escalation
+
+Use `agent-browser` for JavaScript-rendered blogs and soft-paywalled newsletters:
+
+```bash
+# Substack newsletters — JS-rendered, may require email signup for some content
+agent-browser open "https://authorname.substack.com"
+agent-browser wait 2000
+agent-browser snapshot --urls      # get all post links
+agent-browser open "<latest-post-url>"
+agent-browser wait 2000
+agent-browser snapshot -c
+agent-browser get text @e_article  # post body
+
+# Medium / Towards Data Science — soft paywall (3 free articles/month)
+agent-browser open "https://towardsdatascience.com/article-url"
+agent-browser wait 2000
+agent-browser snapshot -i
+# Check if paywall modal is present
+agent-browser get text @e_body     # extract what's visible
+
+# Lab blogs (usually static/clean, but some are JS-heavy)
+# anthropic.com/news — mostly static, web search works
+# openai.com/blog — mostly static, web search works
+# deepmind.google — use agent-browser if web search returns incomplete content
+agent-browser open "https://deepmind.google/discover/blog"
+agent-browser wait 2000
+agent-browser snapshot -c
+
+# Simon Willison's blog — static, web search preferred
+# Chip Huyen's blog — static, web search preferred
+# For any researcher blog where web search returns only headlines:
+agent-browser open "<blog-url>"
+agent-browser wait 1000
+agent-browser snapshot -c
+```
+
+**Substack soft paywall handling:**
+Many Substack newsletters are free to read but require scrolling past a signup prompt. In the snapshot, look for a "Continue reading" or email capture modal (`@e_modal`). Try:
+```bash
+agent-browser press Escape         # dismiss modal
+agent-browser snapshot -c          # re-snapshot — content may now be visible
+```
+
+**When to use agent-browser for blogs:**
+- Substack: always (JS-rendered feed + modals)
+- Medium/TDS: when web search only returns the headline
+- Lab blogs (Anthropic, OpenAI): web search preferred; agent-browser only if content is missing
+- Researcher personal blogs: web search preferred (usually static Jekyll/Hugo sites)
+
+Refer to `skills/agent-browser.md` Section 4.6 for the full Substack recipe.
 
 ## Error Handling
 
